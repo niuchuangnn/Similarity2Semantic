@@ -71,6 +71,8 @@ parser.add_argument('--wd', '--weight-decay', default=1e-4, type=float,
                     dest='weight_decay')
 parser.add_argument('-p', '--print-freq', default=10, type=int,
                     metavar='N', help='print frequency (default: 10)')
+parser.add_argument('--save-freq', default=10, type=int,
+                    metavar='N', help='save frequency (default: 10)')
 parser.add_argument('--resume', default='', type=str, metavar='PATH',
                     help='path to latest checkpoint (default: none)')
 parser.add_argument('--world-size', default=1, type=int,
@@ -94,11 +96,11 @@ parser.add_argument('--multiprocessing-distributed', action='store_false',
 # sim2sem specific configs:
 parser.add_argument('--fea-dim', default=128, type=int,
                     help='feature dimension (default: 128)')
-parser.add_argument('---k', default=65536, type=int,
+parser.add_argument('--k', default=65536, type=int,
                     help='queue size; number of negative keys (default: 65536)')
-parser.add_argument('---m', default=0.999, type=float,
+parser.add_argument('--m', default=0.999, type=float,
                     help='sim2sem momentum of updating key encoder (default: 0.999)')
-parser.add_argument('---t', default=0.07, type=float,
+parser.add_argument('--t', default=0.2, type=float,
                     help='softmax temperature (default: 0.07)')
 
 
@@ -283,7 +285,7 @@ def main_worker(gpu, ngpus_per_node, args):
         train_pre(train_loader_sim, model, criterion, optimizer_pre, epoch_pre, args)
 
         if not args.multiprocessing_distributed or (args.multiprocessing_distributed
-                and args.rank % ngpus_per_node == 0 and (epoch_pre+1) == 50):
+                and args.rank % ngpus_per_node == 0 and (epoch_pre+1) % args.save_freq == 0):
             save_checkpoint({
                 'epoch_pre': epoch_pre + 1,
                 'state_dict': model.state_dict(),
